@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-zinc-950 text-zinc-100 font-sans">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aether RAG — Contextual MCP Engine</title>
+    
+    <!-- Google Fonts: Outfit for headings, Inter for body -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS v4.0 Play Script -->
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Custom theme tweaks using standard CSS -->
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="h-full flex flex-col overflow-hidden selection:bg-violet-500/30 selection:text-violet-200">
+
+    <!-- Top Navigation Header -->
+    <header class="relative shrink-0 z-20 border-b border-zinc-900 bg-zinc-950/80 backdrop-blur-md px-6 py-4 flex items-center justify-between">
+        <!-- Glowing gradient effect behind logo -->
+        <div class="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-violet-500/50 to-cyan-500/50"></div>
+        
+        <div class="flex items-center gap-3">
+            <div class="h-9 w-9 rounded-lg bg-gradient-to-tr from-violet-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-violet-500/20">
+                <i data-lucide="cpu" class="h-5 w-5 text-white animate-pulse"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold font-outfit tracking-wide bg-gradient-to-r from-zinc-50 via-zinc-100 to-zinc-400 bg-clip-text text-transparent">
+                    Aether RAG
+                </h1>
+                <p class="text-[10px] text-zinc-500 font-medium uppercase tracking-widest -mt-0.5">Model Context Protocol Engine</p>
+            </div>
+        </div>
+
+        <!-- Right Header Actions -->
+        <div class="flex items-center gap-3">
+            <!-- Connection Status -->
+            <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-[11px] text-zinc-400">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                <span>MCP Pipeline Active</span>
+            </div>
+            
+            <!-- API Settings Toggle Button -->
+            <button id="toggle-settings-btn" class="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-zinc-200 transition-all duration-300 relative group" title="API Configuration">
+                <i data-lucide="key-round" class="h-4.5 w-4.5"></i>
+                <!-- Small red dot if API key is not configured -->
+                <span id="key-warning-dot" class="absolute top-1 right-1 h-2 w-2 rounded-full bg-amber-500 hidden"></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Floating / Expandable API Configuration Panel -->
+    <div id="settings-panel" class="hidden absolute top-18 right-6 w-96 z-50 bg-zinc-900/95 border border-zinc-800 rounded-2xl p-5 shadow-2xl backdrop-blur-xl transition-all duration-300 select-none">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="font-outfit font-semibold text-sm text-zinc-200 flex items-center gap-2">
+                <i data-lucide="settings" class="h-4 w-4 text-violet-400"></i> API Configuration
+            </h3>
+            <button id="close-settings-btn" class="p-1 text-zinc-500 hover:text-zinc-300 rounded-lg hover:bg-zinc-800/50 transition">
+                <i data-lucide="x" class="h-4 w-4"></i>
+            </button>
+        </div>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs text-zinc-400 font-medium mb-1.5">OpenAI API Key</label>
+                <div class="relative">
+                    <input id="api-key-input" type="password" placeholder="sk-proj-..." class="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500/50 rounded-xl py-2 px-3 pl-9 text-xs focus:ring-1 focus:ring-violet-500/20 text-zinc-100 placeholder-zinc-700 transition outline-none">
+                    <i data-lucide="lock" class="absolute left-3 top-2.5 h-3.5 w-3.5 text-zinc-600"></i>
+                </div>
+                <p class="text-[10px] text-zinc-500 mt-1.5 leading-relaxed">
+                    Provide your key to generate embeddings and run completions. Leaves zero traces on servers; key is held safely in session storage.
+                </p>
+            </div>
+            
+            <div id="key-status-banner" class="flex items-center gap-2 px-3 py-2 rounded-xl text-xs bg-zinc-950 border border-zinc-800 text-zinc-400">
+                <div class="h-1.5 w-1.5 rounded-full bg-zinc-600" id="key-indicator-light"></div>
+                <span id="key-status-text">Checking API status...</span>
+            </div>
+
+            <button id="save-key-btn" class="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-medium rounded-xl py-2 text-xs shadow-md shadow-violet-600/10 hover:shadow-violet-600/25 transition active:scale-[0.98]">
+                Save Credentials
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="grow flex flex-col lg:flex-row overflow-hidden p-6 gap-6 relative">
+        <!-- Background Ambient Glows (2026 style aesthetics) -->
+        <div class="absolute -top-40 -left-40 w-96 h-96 bg-violet-600/10 rounded-full blur-[100px] pointer-events-none"></div>
+        <div class="absolute bottom-10 right-10 w-96 h-96 bg-cyan-600/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+        <!-- Left Sidebar: Ingestion Panel (Columns 1-4 on large screens) -->
+        <section class="lg:w-96 w-full shrink-0 flex flex-col gap-5 z-10">
+            <!-- Upload Panel -->
+            <div class="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-5 flex flex-col backdrop-blur-md">
+                <h2 class="font-outfit font-semibold text-sm text-zinc-200 flex items-center gap-2 mb-3">
+                    <i data-lucide="file-up" class="h-4 w-4 text-violet-400"></i> Document Ingestion
+                </h2>
+                
+                <!-- Drag and Drop Dropzone -->
+                <div id="dropzone" class="border border-dashed border-zinc-800 hover:border-violet-500/50 bg-zinc-950/40 rounded-xl p-6 text-center cursor-pointer transition-all duration-300 group flex flex-col items-center justify-center gap-3">
+                    <input type="file" id="file-input" class="hidden" accept=".pdf,.txt">
+                    <div class="h-10 w-10 rounded-full bg-zinc-900 border border-zinc-800 group-hover:border-violet-500/30 flex items-center justify-center text-zinc-400 group-hover:text-violet-400 transition-all duration-300 shadow-inner">
+                        <i data-lucide="upload-cloud" class="h-5 w-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold text-zinc-300 group-hover:text-violet-300 transition">Drag & drop document</p>
+                        <p class="text-[10px] text-zinc-500 mt-1">Supports PDF or TXT up to 15MB</p>
+                    </div>
+                </div>
+
+                <!-- Active Upload Process Tracker -->
+                <div id="upload-progress-container" class="hidden mt-4 space-y-2">
+                    <div class="flex items-center justify-between text-xs">
+                        <span id="upload-filename" class="truncate font-medium text-zinc-400 max-w-[70%]">document.pdf</span>
+                        <span id="upload-percentage" class="text-violet-400 font-semibold">45%</span>
+                    </div>
+                    <div class="h-1.5 w-full bg-zinc-950 rounded-full overflow-hidden border border-zinc-800">
+                        <div id="upload-progress-bar" class="h-full bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full transition-all duration-300" style="width: 45%;"></div>
+                    </div>
+                    <div class="flex items-center gap-1.5 text-[10px] text-zinc-500">
+                        <i data-lucide="loader" class="h-3 w-3 animate-spin text-violet-400"></i>
+                        <span id="upload-status-subtext">Parsing formatting and building index...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Indexed Documents List -->
+            <div class="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-5 flex flex-col grow backdrop-blur-md min-h-[250px] lg:min-h-0">
+                <div class="flex items-center justify-between mb-3 shrink-0">
+                    <h2 class="font-outfit font-semibold text-sm text-zinc-200 flex items-center gap-2">
+                        <i data-lucide="database" class="h-4 w-4 text-cyan-400"></i> Indexed Context
+                    </h2>
+                    <span id="doc-count-badge" class="px-2 py-0.5 rounded-md bg-zinc-950 border border-zinc-800 text-[10px] text-zinc-400 font-medium">0 Files</span>
+                </div>
+
+                <!-- Scrollable Document List Area -->
+                <div id="documents-list" class="grow overflow-y-auto pr-1 space-y-2 scrollbar-custom max-h-[250px] lg:max-h-none">
+                    <!-- Placeholder Empty State -->
+                    <div id="no-docs-placeholder" class="h-full flex flex-col items-center justify-center text-center p-6 gap-2">
+                        <i data-lucide="folder-open" class="h-8 w-8 text-zinc-700"></i>
+                        <div>
+                            <p class="text-xs font-medium text-zinc-400">No documents index</p>
+                            <p class="text-[10px] text-zinc-600 mt-1">Upload a PDF or TXT to populate the vector storage.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Clear database controls -->
+                <div class="mt-4 pt-3 border-t border-zinc-800/50 shrink-0">
+                    <button id="clear-index-btn" class="w-full bg-zinc-950 hover:bg-red-950/20 border border-zinc-850 hover:border-red-900/30 text-zinc-500 hover:text-red-400 rounded-xl py-2 text-[11px] font-semibold tracking-wide transition flex items-center justify-center gap-2 active:scale-[0.98]">
+                        <i data-lucide="trash-2" class="h-3.5 w-3.5"></i> Clear Indexed Database
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Side: Chat Panel -->
+        <section class="grow flex flex-col bg-zinc-900/40 border border-zinc-800/80 rounded-2xl backdrop-blur-md overflow-hidden z-10 relative">
+            <!-- Chat Box Header -->
+            <div class="shrink-0 px-5 py-4 border-b border-zinc-800/60 bg-zinc-900/20 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="h-2 w-2 rounded-full bg-violet-500 animate-pulse"></div>
+                    <div>
+                        <h2 class="text-sm font-semibold text-zinc-200">Interactive Query Studio</h2>
+                        <p class="text-[10px] text-zinc-500">FastAPI backend retrieves and constraints context before LLM processing</p>
+                    </div>
+                </div>
+                
+                <!-- Pipeline State indicators -->
+                <div id="pipeline-status" class="flex items-center gap-2 text-[11px] text-zinc-500 font-medium">
+                    <span id="status-icon-box" class="h-4.5 w-4.5 rounded-full bg-zinc-950 border border-zinc-850 flex items-center justify-center text-zinc-600">
+                        <i data-lucide="message-square" class="h-3 w-3"></i>
+                    </span>
+                    <span id="status-message">Idle</span>
+                </div>
+            </div>
+
+            <!-- Messages Window -->
+            <div id="chat-messages" class="grow overflow-y-auto p-5 space-y-4 scrollbar-custom">
+                <!-- Welcome Message -->
+                <div class="flex gap-4 max-w-[85%]">
+                    <div class="h-8 w-8 rounded-lg bg-gradient-to-tr from-violet-600 to-indigo-500 flex items-center justify-center shadow-md shadow-violet-600/10 shrink-0 select-none">
+                        <i data-lucide="sparkles" class="h-4 w-4 text-white"></i>
+                    </div>
+                    <div class="bg-zinc-900/60 border border-zinc-800/50 rounded-2xl rounded-tl-none p-4 text-xs leading-relaxed text-zinc-300">
+                        <p class="font-outfit font-semibold text-zinc-100 text-sm mb-1.5">Welcome to Aether RAG</p>
+                        <p class="mb-3">
+                            This application represents a strict **Model Context Protocol (MCP)** execution pipeline. Upload your documents in the left sidebar, and search them here.
+                        </p>
+                        <div class="border-t border-zinc-800/50 pt-2.5 mt-2.5">
+                            <p class="font-semibold text-zinc-400 mb-1.5 uppercase text-[9px] tracking-wider">How does it work?</p>
+                            <ul class="space-y-1.5 text-zinc-400">
+                                <li class="flex items-start gap-1.5">
+                                    <span class="text-violet-400 text-xs">•</span>
+                                    <span>You submit a question.</span>
+                                </li>
+                                <li class="flex items-start gap-1.5">
+                                    <span class="text-violet-400 text-xs">•</span>
+                                    <span>FastAPI starts an external **MCP subprocess** using `sys.executable`.</span>
+                                </li>
+                                <li class="flex items-start gap-1.5">
+                                    <span class="text-violet-400 text-xs">•</span>
+                                    <span>MCP queries Chroma DB, performs embedding math, and retrieves relevant chunks.</span>
+                                </li>
+                                <li class="flex items-start gap-1.5">
+                                    <span class="text-violet-400 text-xs">•</span>
+                                    <span>MCP returns structured JSON context to the backend.</span>
+                                </li>
+                                <li class="flex items-start gap-1.5">
+                                    <span class="text-violet-400 text-xs">•</span>
+                                    <span>OpenAI completes your question **strictly grounded** in that context.</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question Input Form -->
+            <div class="shrink-0 p-5 border-t border-zinc-800/60 bg-zinc-900/20">
+                <form id="chat-form" class="flex gap-3 relative">
+                    <div class="relative grow">
+                        <input id="chat-input" type="text" autocomplete="off" placeholder="Ask a question about your indexed documents..." class="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500/50 rounded-xl py-3 px-4 pr-12 text-xs focus:ring-1 focus:ring-violet-500/20 text-zinc-100 placeholder-zinc-650 transition outline-none shadow-inner" disabled>
+                        <div class="absolute right-3.5 top-3 flex items-center gap-1.5 text-zinc-600">
+                            <!-- Input indicator icon -->
+                            <i data-lucide="smile" class="h-4.5 w-4.5"></i>
+                        </div>
+                    </div>
+                    <button id="send-btn" type="submit" class="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 disabled:from-zinc-900 disabled:to-zinc-900 disabled:text-zinc-600 border border-transparent disabled:border-zinc-800 text-white rounded-xl px-4.5 transition duration-300 flex items-center justify-center cursor-pointer disabled:cursor-not-allowed shadow-md shadow-violet-600/5 hover:shadow-violet-600/20 active:scale-[0.97]" disabled>
+                        <i data-lucide="send-horizontal" class="h-4.5 w-4.5"></i>
+                    </button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

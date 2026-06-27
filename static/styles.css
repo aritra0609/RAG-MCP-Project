@@ -1,0 +1,132 @@
+/* Aether RAG Custom Stylesheet */
+
+/* Set font overrides globally */
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+h1, h2, h3, h4, .font-outfit {
+    font-family: 'Outfit', 'Inter', sans-serif;
+}
+
+/* Custom Scrollbar Styles for the premium dark dashboard */
+.scrollbar-custom::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+    background: rgba(63, 63, 70, 0.4); /* zinc-700 with opacity */
+    border-radius: 9999px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+    background: rgba(113, 113, 122, 0.6); /* zinc-500 with opacity */
+}
+
+/* Glassmorphism utility styles */
+.glass-panel {
+    background: rgba(24, 24, 27, 0.45); /* bg-zinc-900/45 */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Smooth fade-in animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Streaming Text Cursor typing effect */
+.typing-cursor::after {
+    content: "▋";
+    display: inline-block;
+    color: #8b5cf6; /* violet-500 */
+    animation: pulseCursor 0.8s steps(2, start) infinite;
+    margin-left: 2px;
+}
+
+@keyframes pulseCursor {
+    to {
+        visibility: hidden;
+    }
+}
+
+/* Markdown response styles */
+.markdown-body {
+    line-height: 1.6;
+}
+
+.markdown-body p {
+    margin-bottom: 0.75rem;
+}
+
+.markdown-body p:last-child {
+    margin-bottom: 0;
+}
+
+.markdown-body code {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.15rem 0.35rem;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.85em;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+}
+
+.markdown-body pre {
+    background: rgba(9, 9, 11, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    overflow-x: auto;
+    margin: 0.75rem 0;
+}
+
+.markdown-body pre code {
+    background: transparent;
+    padding: 0;
+    border: none;
+    font-size: 0.9em;
+}
+
+.markdown-body ul, .markdown-body ol {
+    margin-bottom: 0.75rem;
+    padding-left: 1.25rem;
+}
+
+.markdown-body ul {
+    list-style-type: disc;
+}
+
+.markdown-body ol {
+    list-style-type: decimal;
+}
+
+.markdown-body li {
+    margin-bottom: 0.25rem;
+}
+
+.markdown-body blockquote {
+    border-left: 3px solid #8b5cf6;
+    padding-left: 0.75rem;
+    color: #a1a1aa;
+    font-style: italic;
+    margin: 0.75rem 0;
+}
